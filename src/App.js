@@ -12,12 +12,8 @@ class App extends React.Component {
   componentDidMount() {
     axios.get(`https://dfs-cfb.herokuapp.com/`)
       .then(res => {
-        console.log({res})
-        // const posts = res.data.data.children.map(obj => obj.data)
         const { qbs, rbs, wrs } = res.data
-        console.log({qbs})
-        console.log({rbs})
-        console.log({wrs})
+
         // this.setState({ qbs, rbs, wrs })
         this.setState({ qbs })
         this.setState({ rbs })
@@ -31,7 +27,6 @@ class App extends React.Component {
 
     return(
       qbs.map(qb => {
-        // console.log({qb})
         return (
         <div>
           <p key={qb.id}>{qb.name}</p><br></br>
@@ -39,7 +34,6 @@ class App extends React.Component {
         )
       })
     )
-    // return(<p>haaay</p>)
   }
 }
 
