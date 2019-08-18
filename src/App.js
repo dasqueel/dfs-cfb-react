@@ -1,26 +1,46 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from 'react'
+import axios from 'axios'
+import './App.css'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends React.Component {
+  state = {
+    "qbs": [],
+    "rbs": [],
+    "wrs": []
+  }
+
+  componentDidMount() {
+    axios.get(`https://dfs-cfb.herokuapp.com/`)
+      .then(res => {
+        console.log({res})
+        // const posts = res.data.data.children.map(obj => obj.data)
+        const { qbs, rbs, wrs } = res.data
+        console.log({qbs})
+        console.log({rbs})
+        console.log({wrs})
+        // this.setState({ qbs, rbs, wrs })
+        this.setState({ qbs })
+        this.setState({ rbs })
+        this.setState({ wrs })
+      })
+      .catch(err => console.log(err))
+  }
+
+  render() {
+    const { qbs, rbs, wrs } = this.state
+
+    return(
+      qbs.map(qb => {
+        // console.log({qb})
+        return (
+        <div>
+          <p key={qb.id}>{qb.name}</p><br></br>
+        </div>
+        )
+      })
+    )
+    // return(<p>haaay</p>)
+  }
 }
 
-export default App;
+export default App
