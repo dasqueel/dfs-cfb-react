@@ -25,12 +25,24 @@
 
 .players {
   display: flex;
-  justify-content: space-evenly;
+  justify-content: space-between;
 }
 
 .headers {
-  height: 150px;
-  background-color: green;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  height: 70px;
+  margin-bottom: 20px;
+}
+
+.player {
+  display: flex;
+  flex-direction: row;
+}
+
+input {
+  width: 30px;
 }
 
 @keyframes App-logo-spin {
