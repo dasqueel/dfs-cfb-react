@@ -3,6 +3,7 @@ import axios from "axios"
 import "./App.css"
 
 class App extends React.Component {
+
   state = {
     qbs: [],
     rbs: [],
@@ -12,7 +13,8 @@ class App extends React.Component {
     wrsCount: 0,
     flexCount: 0,
     superFlexCount: 0,
-    totalEnteries: 0
+    totalEnteries: 0,
+    fileName: ""
   }
 
   componentDidMount() {
@@ -28,14 +30,17 @@ class App extends React.Component {
   }
 
   updateNumberEnteries(event) {
-    const { totalEnteries, qbsCount, rbsCount, wrsCount, flexLeft, superFlexLeft } = this.state
-    this.setState({ totalEnteries: event.target.value })
+    // const { totalEnteries, qbsCount, rbsCount, wrsCount, flexCount, superFlexCount } = this.state
+    this.setState({ totalEnteries: parseInt(event.target.value) })
+  }
+
+  updateFileName(event) {
+    this.setState({ fileName: event.target.value })
   }
 
   updatePosition = (pos) => (event) => {
-    // update the total for that position
+    const { totalEnteries, qbsCount, rbsCount, wrsCount, flexCount, superFlexCount } = this.state
 
-    // update the flex reasonsing
     const posInputs = Array.prototype.slice.call(document.getElementsByName(pos))
 
     const count = posInputs.reduce((acc, cur) => {
@@ -45,10 +50,82 @@ class App extends React.Component {
 
     const posKey = `${pos}Count`
     this.setState({ [posKey]: count})
+
+
+    if (pos === 'qbs') {
+      if (count > totalEnteries) {
+        this.setState({ superFlexCount: -(totalEnteries - count)})
+      }
+      else {
+        this.setState({superFlexCount: 0})
+      }
+    }
+
+    // if (pos === 'rbs') {
+
+    // }
+  }
+
+  createCsv = () => {
+    const { qbs, rbs, wrs } = this.state
+
+    // add shares of each player
+    // { name: 'Sean Taylor', id: 2892393, shares: 20 }
+    let finalQbs = []
+    qbs.forEach(qb => {
+      //
+      const el = document.getElementById(qb.id)
+      const val = el.value
+      if (val !== "") {
+        finalQbs.push({ id: qb.id, name: qb.name, shares: parseInt(val)})
+      }
+    })
+
+    let finalRbs = []
+    rbs.forEach(rb => {
+      //
+      const el = document.getElementById(rb.id)
+      const val = el.value
+      if (val !== "") {
+        finalRbs.push({ id: rb.id, name: rb.name, shares: parseInt(val)})
+      }
+    })
+
+    let finalsWrs = []
+    wrs.forEach(wr => {
+      //
+      const el = document.getElementById(wr.id)
+      const val = el.value
+      if (val !== "") {
+        finalsWrs.push({ id: wr.id, name: wr.name, shares: parseInt(val)})
+      }
+    })
+
+    const payload = {
+      finalQbs,
+      finalRbs,
+      finalWrs
+    }
+
+    console.log({payload})
+
+    // axios.post(
+    //   'http://127.0.0.1:5000/out',
+    //   {}
+    // )
+    // .then(resp => {
+    //   console.log({resp})
+    //   alert('aaayyyeeee')
+    // })
+    // .catch(err => {
+    //   console.log({err})
+    //   alert('nope sorry')
+    // })
   }
 
   render() {
-    const { qbs,
+    const {
+            qbs,
             rbs,
             wrs,
             qbsCount,
@@ -68,10 +145,12 @@ class App extends React.Component {
             onChange={this.updateNumberEnteries.bind(this)}
           />
           <p>qbs left: {totalEnteries - qbsCount}</p>
-          <p>rbs left: {2 *totalEnteries - rbsCount}</p>
+          <p>rbs left: {2 * totalEnteries - rbsCount}</p>
           <p>wrs left: {3 * totalEnteries - wrsCount}</p>
           <p>flex left: {totalEnteries - flexCount}</p>
           <p>super flex left: {totalEnteries - superFlexCount}</p>
+          <input type="text" value={this.state.fileName} onChange={this.updateFileName.bind(this)} />
+          <button onClick={this.createCsv}>create csv</button>
         </div>
         <div className="players">
           <div className="qbs">
@@ -82,6 +161,7 @@ class App extends React.Component {
                   type="text"
                   name="qbs"
                   onChange={this.updatePosition("qbs")}
+                  id={qb.id}
                 />
                 <p key={qb.id}>
                   {qb.team} {qb.name} {qb.sal} {qb.date}
@@ -93,18 +173,32 @@ class App extends React.Component {
           <div className="rbs">
             {rbs.map(rb => {
               return (
+                <div className="player">
+                <input
+                  type="text"
+                  name="rbs"
+                  onChange={this.updatePosition("rbs")}
+                />
                 <p key={rb.id}>
                   {rb.team} {rb.name} {rb.sal} {rb.date}
                 </p>
+                </div>
               )
             })}
           </div>
           <div className="wrs">
             {wrs.map(wr => {
               return (
+                <div className="player">
+                <input
+                  type="text"
+                  name="wrs"
+                  onChange={this.updatePosition("wrs")}
+                />
                 <p key={wr.id}>
                   {wr.team} {wr.name} {wr.sal} {wr.date}
                 </p>
+                </div>
               )
             })}
           </div>
