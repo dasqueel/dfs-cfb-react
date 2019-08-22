@@ -110,7 +110,7 @@ class App extends React.Component {
 
     axios.post(
       // 'http://localhost:5000/out',
-      'http://dfs-cfb.herokuapp.com/out',
+      'https://dfs-cfb.herokuapp.com/out',
       payload,
       { headers: {
         'Content-Type': 'application/json',
