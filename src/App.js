@@ -14,13 +14,16 @@ class App extends React.Component {
     flexCount: 0,
     superFlexCount: 0,
     totalEnteries: 0,
-    fileName: ""
+    fileName: "",
+    downloadUrl: null
   }
 
   componentDidMount() {
+    const csvFile = window.location.pathname.replace("/","")
+
     axios
-      // .get(`https://dfs-cfb.herokuapp.com/`)
-      .get(`http://127.0.0.1:5000/`)
+      .get(`https://dfs-cfb.herokuapp.com/${csvFile}`)
+      // .get(`http://127.0.0.1:5000/${csvFile}`)
       .then(res => {
         const { qbs, rbs, wrs } = res.data
 
@@ -30,7 +33,6 @@ class App extends React.Component {
   }
 
   updateNumberEnteries(event) {
-    // const { totalEnteries, qbsCount, rbsCount, wrsCount, flexCount, superFlexCount } = this.state
     this.setState({ totalEnteries: parseInt(event.target.value) })
   }
 
@@ -39,7 +41,7 @@ class App extends React.Component {
   }
 
   updatePosition = (pos) => (event) => {
-    const { totalEnteries, qbsCount, rbsCount, wrsCount, flexCount, superFlexCount } = this.state
+    const { totalEnteries } = this.state
 
     const posInputs = Array.prototype.slice.call(document.getElementsByName(pos))
 
@@ -54,7 +56,7 @@ class App extends React.Component {
 
     if (pos === 'qbs') {
       if (count > totalEnteries) {
-        this.setState({ superFlexCount: -(totalEnteries - count)})
+        this.setState({ superFlexCount: - (totalEnteries - count) })
       }
       else {
         this.setState({superFlexCount: 0})
@@ -67,13 +69,12 @@ class App extends React.Component {
   }
 
   createCsv = () => {
-    const { qbs, rbs, wrs } = this.state
+    const { qbs, rbs, wrs, totalEnteries, fileName } = this.state
 
     // add shares of each player
     // { name: 'Sean Taylor', id: 2892393, shares: 20 }
     let finalQbs = []
     qbs.forEach(qb => {
-      //
       const el = document.getElementById(qb.id)
       const val = el.value
       if (val !== "") {
@@ -83,7 +84,6 @@ class App extends React.Component {
 
     let finalRbs = []
     rbs.forEach(rb => {
-      //
       const el = document.getElementById(rb.id)
       const val = el.value
       if (val !== "") {
@@ -91,36 +91,41 @@ class App extends React.Component {
       }
     })
 
-    let finalsWrs = []
+    let finalWrs = []
     wrs.forEach(wr => {
-      //
       const el = document.getElementById(wr.id)
       const val = el.value
       if (val !== "") {
-        finalsWrs.push({ id: wr.id, name: wr.name, shares: parseInt(val)})
+        finalWrs.push({ id: wr.id, name: wr.name, shares: parseInt(val)})
       }
     })
 
-    const payload = {
+    const payload = JSON.stringify({
       finalQbs,
       finalRbs,
-      finalWrs
+      finalWrs,
+      totalEnteries,
+      fileName
+    })
+
+    axios.post(
+      // 'http://localhost:5000/out',
+      'http://dfs-cfb.herokuapp.com/out',
+      payload,
+      { headers: {
+        'Content-Type': 'application/json',
+      }
     }
-
-    console.log({payload})
-
-    // axios.post(
-    //   'http://127.0.0.1:5000/out',
-    //   {}
-    // )
-    // .then(resp => {
-    //   console.log({resp})
-    //   alert('aaayyyeeee')
-    // })
-    // .catch(err => {
-    //   console.log({err})
-    //   alert('nope sorry')
-    // })
+    )
+    .then(resp => {
+      console.log({resp})
+      const downloadUrl = resp.data
+      this.setState({downloadUrl})
+    })
+    .catch(err => {
+      console.log({err})
+      alert('nope sorry')
+    })
   }
 
   render() {
@@ -133,7 +138,8 @@ class App extends React.Component {
             wrsCount,
             flexCount,
             superFlexCount,
-            totalEnteries } = this.state
+            totalEnteries,
+            downloadUrl } = this.state
 
     return (
       <div className="app">
@@ -151,6 +157,7 @@ class App extends React.Component {
           <p>super flex left: {totalEnteries - superFlexCount}</p>
           <input type="text" value={this.state.fileName} onChange={this.updateFileName.bind(this)} />
           <button onClick={this.createCsv}>create csv</button>
+          {downloadUrl && <a href={downloadUrl} rel="noopener noreferrer" target="_blank">download here</a>}
         </div>
         <div className="players">
           <div className="qbs">
@@ -178,6 +185,7 @@ class App extends React.Component {
                   type="text"
                   name="rbs"
                   onChange={this.updatePosition("rbs")}
+                  id={rb.id}
                 />
                 <p key={rb.id}>
                   {rb.team} {rb.name} {rb.sal} {rb.date}
@@ -194,6 +202,7 @@ class App extends React.Component {
                   type="text"
                   name="wrs"
                   onChange={this.updatePosition("wrs")}
+                  id={wr.id}
                 />
                 <p key={wr.id}>
                   {wr.team} {wr.name} {wr.sal} {wr.date}
